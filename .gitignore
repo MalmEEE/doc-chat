@@ -1,0 +1,34 @@
+# ===== Secrets =====
+.env
+.env.*
+!.env.example
+
+# ===== Python =====
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# ===== App data (PDFs, vector DB, SQLite) =====
+spike/data/
+backend/data/
+chroma/
+*.db
+*.sqlite3
+
+# ===== Node / React =====
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+
+# ===== Editors and OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
