@@ -2,8 +2,8 @@ import time
 from pypdf import PdfReader
 
 PDF_PATH = "data/st20286196_CIS6035_PRES1.pdf"
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 100
+CHUNK_SIZE = 800
+CHUNK_OVERLAP = 150
 
 def extract_pages(pdf_path):
     """Return a list of {"page": n, "text": ...}, 1-based page numbers, skipping empty pages."""
@@ -17,21 +17,27 @@ def extract_pages(pdf_path):
     return pages
 
 def chunk_pages(pages, size, overlap):
-    """Split each page's text into overlapping chunks. Chunks never cross pages."""
+    """Split each page's text into overlapping chunks at word boundaries. Chunks never cross pages."""
     chunks = []
-    step = size - overlap
     for p in pages:
         text = p["text"]
         start = 0
         index = 0
         while start < len(text):
+            end = min(start + size, len(text))
+            if end < len(text):
+                space = text.rfind(" ", start, end)  # last space before the limit
+                if space > start:
+                    end = space
             chunks.append({
                 "id": f"{p['page']}:{index}",
                 "page": p["page"],
-                "text": text[start:start + size],
+                "text": text[start:end].strip(),
             })
-            start += step
             index += 1
+            if end >= len(text):                     # reached the end of this page: stop
+                break
+            start = max(end - overlap, start + 1)    # step back for overlap, always move forward
     return chunks
 
 if __name__ == "__main__":
