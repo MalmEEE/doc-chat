@@ -19,6 +19,7 @@ backend/data/
 chroma/
 *.db
 *.sqlite3
+spike/chroma_spike
 
 # ===== Node / React =====
 node_modules/
