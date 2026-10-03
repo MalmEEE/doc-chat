@@ -1,11 +1,21 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.services.embeddings import get_model
 
 settings = get_settings()
 
-app = FastAPI(title="DocChat API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    get_model()   # warm up, so the first upload isn't slow
+    yield
+
+
+app = FastAPI(title="DocChat API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
