@@ -1,10 +1,10 @@
 import os
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Response, UploadFile
 
 from app.config import Settings, get_settings
 from app.errors import AppError
-from app.schemas import DocumentOut
+from app.schemas import DocumentListOut, DocumentOut
 from app.services.documents_repo import DocumentsRepo, get_documents_repo
 from app.services.ingestion import ingest_pdf
 from app.services.vector_store import VectorStore, get_vector_store
@@ -33,3 +33,26 @@ def upload_document(
         filename=filename, content=content, settings=settings, store=store, repo=repo
     )
     return DocumentOut.model_validate(document)
+
+@router.get("", response_model=DocumentListOut)
+def list_documents(repo: DocumentsRepo = Depends(get_documents_repo)):
+    return DocumentListOut(
+        documents=[DocumentOut.model_validate(d) for d in repo.list()]
+    )
+
+
+@router.delete("/{document_id}", status_code=204)
+def delete_document(
+    document_id: str,
+    store: VectorStore = Depends(get_vector_store),
+    repo: DocumentsRepo = Depends(get_documents_repo),
+):
+    document = repo.get(document_id)
+    if document is None:
+        raise AppError(404, "DOCUMENT_NOT_FOUND", "Document not found.")
+
+    store.delete_document(document_id)
+    if os.path.exists(document.stored_path):
+        os.remove(document.stored_path)
+    repo.delete(document_id)
+    return Response(status_code=204)

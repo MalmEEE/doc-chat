@@ -9,3 +9,6 @@ class DocumentOut(BaseModel):
     pages: int
     chunks: int
     uploaded_at: str
+
+class DocumentListOut(BaseModel):
+    documents: list[DocumentOut]
