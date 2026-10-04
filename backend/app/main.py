@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.services.embeddings import get_model
-from app.api import documents
+from app.api import ask, documents
 from app.errors import AppError, app_error_handler
 
 settings = get_settings()
@@ -27,6 +27,7 @@ app.add_middleware(
 )
 app.add_exception_handler(AppError, app_error_handler)
 app.include_router(documents.router)
+app.include_router(ask.router)
 
 @app.get("/api/health")
 def health():
