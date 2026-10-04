@@ -1,5 +1,11 @@
 import pytest
 from fpdf import FPDF
+from fastapi.testclient import TestClient
+
+from app.config import Settings, get_settings
+from app.main import app
+from app.services.documents_repo import DocumentsRepo, get_documents_repo
+from app.services.vector_store import VectorStore, get_vector_store
 
 
 @pytest.fixture
@@ -16,3 +22,16 @@ def make_pdf(tmp_path):
         pdf.output(str(path))
         return path
     return _make
+
+@pytest.fixture
+def client(tmp_path):
+    """A test client whose data lives in a temporary folder, not backend/data."""
+    settings = Settings(data_dir=str(tmp_path), max_upload_mb=1)
+    store = VectorStore(str(tmp_path / "chroma"))
+    repo = DocumentsRepo(str(tmp_path / "test.db"))
+
+    app.dependency_overrides[get_settings] = lambda: settings
+    app.dependency_overrides[get_vector_store] = lambda: store
+    app.dependency_overrides[get_documents_repo] = lambda: repo
+    yield TestClient(app)
+    app.dependency_overrides.clear()
