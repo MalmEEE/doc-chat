@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 NO_DOCUMENTS_MESSAGE = "Upload a document first."
 NOT_FOUND_MESSAGE = "I couldn't find this in your documents."
 SNIPPET_CHARS = 300
+MAX_HISTORY_MESSAGES = 6
 
 
 @dataclass(frozen=True)
@@ -29,6 +30,10 @@ class Answer:
     found: bool
     citations: list[Citation]
 
+def retrieval_query(question: str, history: list[tuple[str, str]]) -> str:
+    """Add the previous user question so follow-ups like 'explain that' retrieve on-topic chunks."""
+    previous = [content for role, content in history if role == "user"]
+    return f"{previous[-1]} {question}" if previous else question
 
 def answer_question(
     *,
@@ -37,17 +42,19 @@ def answer_question(
     llm: LLMProvider,
     top_k: int,
     document_id: str | None = None,
+    history: list[tuple[str, str]] | None = None,
     embed=embed_texts,
 ) -> Answer:
     """Answer a question from the stored chunks, with citations (design §3)."""
     if store.count() == 0:
         return Answer(answer=NO_DOCUMENTS_MESSAGE, found=False, citations=[])
 
-    chunks = store.query(embed([question])[0], top_k, document_id)
+    history = (history or [])[-MAX_HISTORY_MESSAGES:]
+    chunks = store.query(embed([retrieval_query(question, history)])[0], top_k, document_id)
     if not chunks:
         return Answer(answer=NOT_FOUND_MESSAGE, found=False, citations=[])
 
-    raw = llm.generate(SYSTEM_PROMPT, build_prompt(question, chunks)).strip()
+    raw = llm.generate(SYSTEM_PROMPT, build_prompt(question, chunks, history)).strip()
     if not raw or raw.upper().startswith(NOT_FOUND):
         return Answer(answer=NOT_FOUND_MESSAGE, found=False, citations=[])
 
