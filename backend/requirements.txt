@@ -10,3 +10,4 @@ torch==2.14.1+cpu
 sentence-transformers==6.1.0
 chromadb==1.5.9
 python-multipart==0.0.32
+google-genai==2.28.0
