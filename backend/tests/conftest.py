@@ -6,6 +6,8 @@ from app.config import Settings, get_settings
 from app.main import app
 from app.services.documents_repo import DocumentsRepo, get_documents_repo
 from app.services.vector_store import VectorStore, get_vector_store
+from app.llm.fake import FakeProvider
+from app.llm.gemini import get_llm_provider
 
 
 @pytest.fixture
@@ -24,7 +26,11 @@ def make_pdf(tmp_path):
     return _make
 
 @pytest.fixture
-def client(tmp_path):
+def fake_llm():
+    return FakeProvider("Photosynthesis makes glucose. [1]")
+
+@pytest.fixture
+def client(tmp_path, fake_llm):
     """A test client whose data lives in a temporary folder, not backend/data."""
     settings = Settings(data_dir=str(tmp_path), max_upload_mb=1)
     store = VectorStore(str(tmp_path / "chroma"))
@@ -35,3 +41,4 @@ def client(tmp_path):
     app.dependency_overrides[get_documents_repo] = lambda: repo
     yield TestClient(app)
     app.dependency_overrides.clear()
+    app.dependency_overrides[get_llm_provider] = lambda: fake_llm
