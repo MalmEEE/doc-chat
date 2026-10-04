@@ -29,6 +29,7 @@ def make_pdf(tmp_path):
 def fake_llm():
     return FakeProvider("Photosynthesis makes glucose. [1]")
 
+
 @pytest.fixture
 def client(tmp_path, fake_llm):
     """A test client whose data lives in a temporary folder, not backend/data."""
@@ -39,6 +40,6 @@ def client(tmp_path, fake_llm):
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[get_vector_store] = lambda: store
     app.dependency_overrides[get_documents_repo] = lambda: repo
+    app.dependency_overrides[get_llm_provider] = lambda: fake_llm
     yield TestClient(app)
     app.dependency_overrides.clear()
-    app.dependency_overrides[get_llm_provider] = lambda: fake_llm
