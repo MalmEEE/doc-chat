@@ -5,15 +5,16 @@ from fastapi.responses import JSONResponse
 class AppError(Exception):
     """An error the user should see, with the shape from design §4."""
 
-    def __init__(self, status_code: int, code: str, message: str):
+    def __init__(self, status_code: int, code: str, message: str, **extra):
         super().__init__(message)
         self.status_code = status_code
         self.code = code
         self.message = message
+        self.extra = extra
 
 
 async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
-        content={"error": {"code": exc.code, "message": exc.message}},
+        content={"error": {"code": exc.code, "message": exc.message, **exc.extra}},
     )
