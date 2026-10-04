@@ -10,7 +10,7 @@ CHUNKS = [
     Chunk(page=2, index=0, text="Taxes are due in April."),
 ]
 VECTORS = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
-
+HISTORY = [("user", "What is a cat?"), ("assistant", "A mammal. [1]")]
 
 def fake_embed(texts):
     """Every question points at the 'cats' chunk, so it is always retrieved first."""
@@ -96,3 +96,51 @@ def test_prompt_sent_to_llm_contains_question_and_context(store):
     assert "What are cats?" in prompt
     assert "Cats are mammals." in prompt
     assert "NOT_FOUND" in system
+
+
+def recording_embed(seen):
+    def embed(texts):
+        seen.extend(texts)
+        return [[1.0, 0.0, 0.0] for _ in texts]
+    return embed
+
+
+def test_history_is_included_in_the_prompt(store):
+    llm = FakeProvider("Cats are mammals. [1]")
+
+    ask(store, llm, history=HISTORY)
+
+    assert "User: What is a cat?" in llm.calls[0][1]
+
+
+def test_previous_question_is_added_to_the_retrieval_query(store):
+    seen = []
+
+    answer_question(
+        question="Explain that more simply", store=store, llm=FakeProvider("Simple. [1]"),
+        top_k=8, history=HISTORY, embed=recording_embed(seen),
+    )
+
+    assert seen == ["What is a cat? Explain that more simply"]
+
+
+def test_without_history_only_the_question_is_embedded(store):
+    seen = []
+
+    answer_question(
+        question="What are cats?", store=store, llm=FakeProvider("Mammals. [1]"),
+        top_k=8, embed=recording_embed(seen),
+    )
+
+    assert seen == ["What are cats?"]
+
+
+def test_only_the_last_six_history_messages_are_used(store):
+    llm = FakeProvider("Cats are mammals. [1]")
+    history = [("user", f"question {i}") for i in range(10)]
+
+    ask(store, llm, history=history)
+
+    prompt = llm.calls[0][1]
+    assert "question 3" not in prompt
+    assert "question 4" in prompt
