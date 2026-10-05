@@ -77,3 +77,6 @@ button, select, input, textarea { font: inherit; }
 
 .composer { display: flex; gap: 8px; padding: 16px 24px; border-top: 1px solid var(--line); background: var(--panel); }
 .composer .field { flex: 1; }
+.chat-header { display: flex; justify-content: flex-end; padding: 8px 24px 0; }
+.link { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; }
+.link:hover { color: var(--danger); }

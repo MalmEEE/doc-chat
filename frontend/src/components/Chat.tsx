@@ -11,6 +11,16 @@ type Message = {
 };
 
 const HISTORY_MESSAGES = 6;
+const STORAGE_KEY = "docchat.messages";
+
+function loadMessages(): Message[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? (JSON.parse(saved) as Message[]) : [];
+  } catch {
+    return [];   // storage blocked or the saved data is corrupt
+  }
+}
 
 function errorText(e: unknown): string {
   if (e instanceof ApiError) {
@@ -48,15 +58,23 @@ function Citations({ citations }: { citations: Citation[] }) {
 type Props = { scope: string | null; hasDocuments: boolean };
 
 export default function Chat({ scope, hasDocuments }: Props) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const nextId = useRef(1);
-  const bottom = useRef<HTMLDivElement>(null);
+    const [messages, setMessages] = useState<Message[]>(loadMessages);
+    const [input, setInput] = useState("");
+    const [loading, setLoading] = useState(false);
+    const nextId = useRef(messages.reduce((max, m) => Math.max(max, m.id), 0) + 1);
+    const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+    useEffect(() => {
+        try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+        } catch {
+        // storage is full or blocked; the chat still works for this session
+        }
+    }, [messages]);
 
   function add(message: Omit<Message, "id">) {
     const id = nextId.current++;
@@ -94,6 +112,13 @@ export default function Chat({ scope, hasDocuments }: Props) {
 
   return (
     <>
+    {messages.length > 0 && (
+        <div className="chat-header">
+          <button type="button" className="link" onClick={() => setMessages([])}>
+            Clear chat
+          </button>
+        </div>
+      )}
       <div className="messages">
         {messages.length === 0 && (
           <p className="placeholder">
