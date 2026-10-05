@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, listDocuments, type DocumentInfo } from "./api";
 import Sidebar from "./components/Sidebar";
+import Chat from "./components/Chat";
 
 export default function App() {
   const [documents, setDocuments] = useState<DocumentInfo[]>([]);
@@ -19,7 +20,8 @@ export default function App() {
     <div className="app">
       <Sidebar documents={documents} scope={scope} onScopeChange={setScope} onChanged={reload} />
       <main className="chat">
-        <p className="placeholder">{loadError ?? "Chat comes next."}</p>
+        {loadError && <p className="banner" role="alert">{loadError}</p>}
+        <Chat scope={scope} hasDocuments={documents.length > 0} />
       </main>
     </div>
   );
