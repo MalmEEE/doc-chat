@@ -1,26 +1,26 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ApiError, listDocuments, type DocumentInfo } from "./api";
+import Sidebar from "./components/Sidebar";
 
 export default function App() {
-  const [documents, setDocuments] = useState<DocumentInfo[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<DocumentInfo[]>([]);
+  const [scope, setScope] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     listDocuments()
-      .then(setDocuments)
-      .catch((e: ApiError) => setError(e.message));
+      .then((docs) => { setDocuments(docs); setLoadError(null); })
+      .catch((e: ApiError) => setLoadError(e.message));
   }, []);
 
+  useEffect(reload, [reload]);
+
   return (
-    <main style={{ padding: 24, fontFamily: "system-ui" }}>
-      <h1>DocChat</h1>
-      {error && <p>{error}</p>}
-      {documents && <p>Connected. {documents.length} document(s) uploaded.</p>}
-      <ul>
-        {documents?.map((d) => (
-          <li key={d.id}>{d.filename} ({d.pages} pages)</li>
-        ))}
-      </ul>
-    </main>
+    <div className="app">
+      <Sidebar documents={documents} scope={scope} onScopeChange={setScope} onChanged={reload} />
+      <main className="chat">
+        <p className="placeholder">{loadError ?? "Chat comes next."}</p>
+      </main>
+    </div>
   );
 }
