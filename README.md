@@ -4,8 +4,8 @@ Chat with your PDFs. Upload lecture notes, slides or papers, ask questions in pl
 
 DocChat is a retrieval-augmented generation (RAG) application built with React, FastAPI, sentence-transformers, ChromaDB and the Gemini API.
 
-<!-- Replace with your own screenshot or GIF: docs/images/demo.gif -->
-![DocChat answering a question with page citations](docs/images/demo.png)
+<img width="1918" height="1011" alt="image" src="https://github.com/user-attachments/assets/c15de3e7-02f9-4d7a-a61b-02c16ec24204" />
+
 
 ## Features
 
