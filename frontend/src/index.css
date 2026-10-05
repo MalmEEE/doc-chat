@@ -4,7 +4,7 @@
   --ink: #1c2321;
   --muted: #64706c;
   --line: #e2e0d8;
-  --accent: #0f6b5c;
+    --accent: #0e6251;
   --accent-soft: #e3f1ee;
   --danger: #b3261e;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -80,3 +80,4 @@ button, select, input, textarea { font: inherit; }
 .chat-header { display: flex; justify-content: flex-end; padding: 8px 24px 0; }
 .link { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; }
 .link:hover { color: var(--danger); }
+.brand { display: flex; align-items: center; gap: 8px; }

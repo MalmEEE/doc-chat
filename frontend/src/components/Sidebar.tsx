@@ -45,7 +45,10 @@ export default function Sidebar({ documents, scope, onScopeChange, onChanged }: 
 
   return (
     <aside className="sidebar">
-      <h1>DocChat</h1>
+    <h1 className="brand">
+        <img src="/favicon.svg" alt="" width="28" height="28" />
+        DocChat
+      </h1>
 
       <input ref={fileInput} type="file" accept="application/pdf,.pdf" hidden onChange={handleFile} />
       <button className="button" disabled={uploading} onClick={() => fileInput.current?.click()}>
